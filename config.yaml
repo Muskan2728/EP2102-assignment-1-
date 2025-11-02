@@ -1,0 +1,96 @@
+# Configuration for Cardiac Anomaly Detection System
+
+# Data Configuration
+data:
+  raw_data_path: "data/raw/"
+  processed_data_path: "data/processed/"
+  mit_bih_records: ["100", "101", "102", "103", "104", "105", "106", "107", "108", "109"]
+  sampling_rate: 360  # Hz
+  segment_length: 10  # seconds
+  
+# Signal Processing
+preprocessing:
+  # Bandpass filter
+  lowcut: 0.5  # Hz
+  highcut: 50.0  # Hz
+  filter_order: 4
+  
+  # Wavelet denoising
+  wavelet: "db4"
+  wavelet_level: 6
+  threshold_mode: "soft"
+  
+  # Normalization
+  normalize: true
+  normalization_method: "zscore"  # zscore or minmax
+
+# Feature Engineering
+features:
+  # Time domain
+  extract_rr_intervals: true
+  extract_hrv: true
+  
+  # Frequency domain
+  extract_fft: true
+  extract_psd: true
+  psd_bands:
+    vlf: [0.003, 0.04]
+    lf: [0.04, 0.15]
+    hf: [0.15, 0.4]
+  
+  # Time-frequency
+  extract_wavelet: true
+  extract_stft: true
+  stft_window: 256
+  stft_overlap: 128
+
+# Model Configuration
+model:
+  # CNN Autoencoder (Unsupervised)
+  autoencoder:
+    input_size: 3600  # 10 seconds * 360 Hz
+    encoder_channels: [16, 32, 64, 128]
+    latent_dim: 64
+    kernel_size: 7
+    stride: 2
+    dropout: 0.2
+    
+  # CNN Classifier (Supervised)
+  classifier:
+    num_classes: 5  # Normal, PVC, APC, VF, VT
+    channels: [32, 64, 128, 256]
+    kernel_size: 5
+    dropout: 0.3
+    
+  # Training
+  batch_size: 32
+  learning_rate: 0.001
+  epochs: 50
+  early_stopping_patience: 10
+  
+  # Class imbalance handling
+  use_smote: true
+  use_weighted_loss: true
+  
+  # Edge optimization
+  quantization: true
+  pruning: false
+
+# Anomaly Detection
+anomaly_detection:
+  threshold_percentile: 95  # Reconstruction error threshold
+  window_size: 5  # For smoothing anomaly scores
+  
+# Evaluation
+evaluation:
+  test_size: 0.15
+  val_size: 0.15
+  random_state: 42
+  cross_validation_folds: 5
+  
+# Output
+output:
+  model_save_path: "models/"
+  plots_path: "outputs/plots/"
+  reports_path: "outputs/reports/"
+  save_predictions: true
